@@ -1,0 +1,329 @@
+/*
+PROGAMMER:     Alex Danilushkin
+COURSE:        241
+INSTRUCTOR:    Daniel Rogness
+ASSIGNMENT:    6
+
+DUE DATE:      11/1
+
+PURPOSE:       To create and understand a
+               functioning Queue
+
+RELATED FILES:
+               -Queue.h
+               -assign6.cpp
+**************************************************/
+#include "Queue.h"
+
+
+
+
+/*                                Queue Constructor
+Arguments: None
+
+Returns:   Nothing
+
+Summary:   Defualt Constructor for the Queue class
+**************************************************/
+Queue::Queue()
+{
+ //size cap array
+ Front = 0;
+ Back = cap - 1;
+ array = nullptr;
+ Size = 0;
+ cap = 0;
+}
+
+
+/*                                 Queue Destructor
+Arguments: None
+
+Returns:   Nothing
+
+Summary:   Destroys the Queue object when the diver
+           is done running
+**************************************************/
+Queue::~Queue()
+{
+ Front = 0;
+ Back = cap -1;
+ delete array;
+}
+
+
+
+/*                           Queue Copy Constructor
+Arguments: Queue object Reference
+
+Returns:   Nothing
+
+Summary:   Creates a Queue object from another
+           Queue object.
+**************************************************/
+Queue::Queue(const Queue& Copy)
+{
+ cap = Copy.cap;
+ Size = Copy.Size;
+
+ array = new int[cap];
+
+ for(size_t i = 0; i < Size; i++)
+ {
+  array[i] = Copy.array[i];
+
+ }
+
+ Front = 0;
+ Back = Size-1;
+}
+
+
+/*                                    OVERLOAD: <<
+Arguments: -Ostream
+           -Queue object Reference
+
+Returns:   Ostream
+
+Summary:   This standalone function takes the
+           contents inside the queue's array and
+           prints them out
+**************************************************/
+ostream& operator<<(ostream& stuff, const Queue& Q)
+{
+ size_t current, i;
+// stuff << Q.array[0] << endl;
+ for(current = Q.Front, i = 0; i < Q.Size; ++i)
+ {
+  stuff << Q.array[current] << " ";
+
+  current = (current + 1) % Q.cap;
+ }
+
+ return stuff;
+}
+
+
+/*                                     OVERLOAD: =
+Arguments: Queue Object Reference
+
+Returns:   Reference to the object being modified
+
+Summary:   copies the contents of a Queue object to
+           another one
+**************************************************/
+Queue& Queue::operator=(const Queue& Q)
+{
+ if(this == &Q)
+  return *this;
+
+ delete array;
+ cap = Q.cap;
+ Size = Q.Size;
+ Front = Q.Front;
+ Back = Q.Back;
+ array = new int[Q.cap];
+
+ if(Q.cap == 0)
+  {array = nullptr; return *this;}
+
+ for(size_t i = 0; i < cap; ++i)
+ {
+  array[i] = Q.array[i];
+ }
+
+ return *this;
+}
+
+
+/*                                    METHOD: CLEAR
+Arguments: None
+
+Returns:   Void
+
+Summary:   Clears the contents of the Queue object
+**************************************************/
+void Queue::clear()
+{
+ delete[] array;
+ array = nullptr;
+ Size = 0;
+ Front = 0;
+ Back = cap - 1;
+}
+
+
+
+/*                                     METHOD: SIZE
+Arguments: None
+
+Returns:   Unsigned Integer
+
+Summary:   Returns the Size of the Queue, in other
+           words, how many integers are inside the
+           Queue
+**************************************************/
+size_t Queue::size() const
+{
+ return Size;
+}
+
+size_t Queue::capacity() const
+{
+ return cap;
+}
+
+
+
+
+/*                                    METHOD: EMPTY
+Arguments: None
+
+Returns:   Boolean Value
+
+Summary:   Method checks to see if there is
+           anything inside the Queue or not.
+           Returns false if Queue is not empty and
+           true if it is empty.
+**************************************************/
+bool Queue::empty() const
+{
+ if(Size == 0)
+  return true;
+
+ return false;
+}
+
+
+
+
+/*                                    METHOD: FRONT
+Arguments: None
+
+Returns:   Integer
+
+Summary:   Returns the value found at the Front
+           Subscript. if the Queue is empty then
+           the method throws an error.
+**************************************************/
+int Queue::front() const
+{
+ if(empty())
+  throw underflow_error ("Nothing in the Queue. Please add things to Queue to use method properly");
+
+ return array[Front];
+}
+
+
+
+/*                                     METHOD: BACK
+Arguments: None
+
+Returns:   Integer
+
+Summary:   Returns the value found at the Back
+           subscript. If the Queue is empty then
+           the method throws an error.
+**************************************************/
+int Queue::back() const
+{
+ if(empty())
+  throw underflow_error ("Nothing in the Queue. Please add things to Queue to use method properly");
+
+ return array[Back];
+}
+
+
+
+/*                                      METHOD: POP
+Arguments: None
+
+Returns:   Void
+
+Summary:   If the Queue is not empty then it "pops"
+           off the value found at front and
+           decrements the size.
+**************************************************/
+void Queue::pop()
+{
+ if(empty())
+  throw underflow_error ("Nothing in the Queue. Please add things to Queue to use method properly");
+
+   Front = (Front+1)% cap;
+
+//  if((size_t)Front == (cap - 1))
+//   {Front = 0;}
+
+  Size--;
+}
+
+
+
+
+/*                                     METHOD: PUSH
+Arguments: Integer
+
+Returns:   Void
+
+Summary:   This method adds an integer to the
+           Queue. If there is not enough space in
+           the Queue it then calls the reserve
+           method to add more space
+**************************************************/
+void Queue::push(int item)
+{
+
+ if(cap == 0)
+    reserve(size_t(1));
+ if( Size == cap)
+    reserve(size_t(cap));
+// cout <<"cap = " << cap << endl;
+ Size++;
+ if((size_t)Back == (cap - 1))
+  {Back = 0; array[Back] = item;}
+ else
+  {Back++; array[Back] = item;}
+//  cout <<" array front sub "<< Front << endl;
+
+// cout << cap << endl;
+}
+
+
+
+
+/*                                   METHOD: RESERVE
+Arguments: Unsigned Integer
+
+Returns:   Void
+
+Summary:   Adds more space to the Queue when there
+           is not enough. This method is called by
+           push method.
+**************************************************/
+void Queue::reserve(unsigned int addCap)
+{
+if(addCap == (size_t)1)
+  {array = new int[addCap]; Front = 0; cap = addCap; Back = 0;}
+
+ if(addCap >= (size_t)1)
+ {
+  int temp[Size];
+  size_t current, i;
+
+  for(current = Front, i = 0; i < Size; i++)
+   {
+    temp[i] = array[current];
+
+    current = (current + 1) % cap;
+   }
+
+  cap = cap + addCap;
+  delete[] array;
+  array = new int[cap];
+
+  for(i = 0; i < Size; i++)
+  {
+   array[i] = temp[i];
+  }
+  Front = 0;
+}
